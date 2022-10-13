@@ -20,5 +20,6 @@ a8946b779ccf305da8dadefa9d7d9402ccfe756246dd70a251e4375076a83648  ./tools/packag
 605e3c77857d9c55932c7f497f56c70d46af65af59600e5507f42aea3832a848  ./tools/packages/libgtk-3-common_3.22.11-1.0tails1_all.deb
 a0ae2652c5ca8461752f17ab22aa385c588481351b7b4aeb199a3d23d6479c34  ./tools/packages/libgtk2.0-0_2.24.31-2.0tails1_amd64.deb
 0862890d70bafeb6b4a7a1c1da05c90569e0147522d6526fad6d146d6335b79f  ./tools/packages/libgtk2.0-common_2.24.31-2.0tails1_all.deb
+c1d7da949ecd29b188a713c82382a0aaf7c43db2f4983ffb555e377fac994324  ./tools/mtools_4.0.18-2+b1_amd64.deb
 5c7ab880233139bc213d2ef214dc6c433eac488eaa51f8d59c4eb791fa777293  ./tools/squashfs-tools_4.3-3.0tails4_amd64.deb
-038998484c1424e5f069d08bb6a9cc6f6b0b0686c4230568504308eeff9a2de0  ./variables.sh
+6ca8ca5b5d2fa26898c785d4c0f2130b4852b3afe69bcc7c0746ae6dcc8d2d7f  ./variables.sh
