@@ -17,15 +17,18 @@ debuerreotype-chroot $WD/chroot passwd -d root
 # Installing all needed packages for COEN
 debuerreotype-apt-get $WD/chroot update
 debuerreotype-chroot $WD/chroot DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Check-Valid-Until=false install \
-    --no-install-recommends --yes \
+    -o Acquire::http::Dl-Limit=1000 --no-install-recommends --yes \
     linux-image-$ARCH live-boot systemd-sysv \
     grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin
 debuerreotype-chroot $WD/chroot DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Check-Valid-Until=false install \
-    --no-install-recommends --yes \
+    -o Acquire::http::Dl-Limit=1000 --no-install-recommends  --yes \
     iproute2 ifupdown pciutils usbutils dosfstools eject exfat-utils \
     vim links2 xpdf cups cups-bsd enscript libbsd-dev tree openssl less iputils-ping \
     xserver-xorg-core xserver-xorg xfce4 xfce4-terminal xfce4-panel lightdm system-config-printer \
-    xterm gvfs thunar-volman xfce4-power-manager
+    xterm gvfs thunar-volman xfce4-power-manager \
+    initramfs-tools-core initramfs-tools \
+    qemu-system libvirt-clients libvirt-daemon-system
+
 debuerreotype-apt-get $WD/chroot --yes --purge autoremove
 debuerreotype-apt-get $WD/chroot --yes clean
 
@@ -40,7 +43,6 @@ echo "coen" > $WD/chroot/etc/hostname
 
 cat > $WD/chroot/etc/hosts << EOF
 127.0.0.1       localhost coen
-192.168.0.2     hsm
 EOF
 
 cat > $WD/chroot/etc/network/interfaces.d/coen-network << EOF
@@ -53,8 +55,6 @@ iface eth0 inet static
   netmask 255.255.255.0
 EOF
 
-# Profile in .bashrc to work with xfce terminal
-echo "export PATH=:/opt/icann/bin:/opt/Keyper/bin:\$PATH" >> $WD/chroot/root/.bashrc
 # ls with color
 sed -i -r -e '9s/^#//' \
           -e '10s/^#//' \
@@ -89,15 +89,6 @@ sed -i '/^[^#].*pam_lastlog\.so/s/^/# /' $WD/chroot/etc/pam.d/login
 
 # Making sure that the xscreensaver is off
 rm -f $WD/chroot/etc/xdg/autostart/xscreensaver.desktop
-
-# Defining mount point /media/ for HSMFD, HSMFD1 and KSRFD
-cat > $WD/chroot/etc/udev/rules.d/99-udisks2.rules << EOF
-# UDISKS_FILESYSTEM_SHARED
-# ==1: mount filesystem to a shared directory (/media/VolumeName)
-# ==0: mount filesystem to a private directory (/run/media/USER/VolumeName)
-# See udisks(8)
-ENV{ID_FS_USAGE}=="filesystem|other|crypto", ENV{UDISKS_FILESYSTEM_SHARED}="1"
-EOF
 
 # Creating boot directories
 mkdir -p $WD/image/live
@@ -137,9 +128,15 @@ menuentry "coen-${RELEASE} ${ARCH}" --hotkey "c" --id "coen-${RELEASE} Live ${AR
 EOF
 
 # Creating GRUB images
-grub-mkimage --directory "$WD/chroot/usr/lib/grub/i386-pc" --prefix '/boot/grub' --output "$WD/image/boot/grub/i386-pc/eltorito.img" --format 'i386-pc-eltorito' --compression 'auto'  --config "$WD/image/boot/grub/grub.cfg" 'biosdisk' 'iso9660'
-grub-mkimage --directory "$WD/chroot/usr/lib/grub/i386-efi" --prefix '()/boot/grub' --output "$WD/image/efi/boot/bootia32.efi" --format 'i386-efi' --compression 'auto'  --config "$WD/image/boot/grub/grub.cfg" 'part_gpt' 'part_msdos' 'fat' 'part_apple' 'iso9660'
-grub-mkimage --directory "$WD/chroot/usr/lib/grub/x86_64-efi" --prefix '()/boot/grub' --output "$WD/image/efi/boot/bootx64.efi" --format 'x86_64-efi' --compression 'auto'  --config "$WD/image/boot/grub/grub.cfg" 'part_gpt' 'part_msdos' 'fat' 'part_apple' 'iso9660'
+grub-mkimage --directory "$WD/chroot/usr/lib/grub/i386-pc" --prefix '/boot/grub' \
+ --output "$WD/image/boot/grub/i386-pc/eltorito.img" --format 'i386-pc-eltorito' \
+ --compression 'auto'  --config "$WD/image/boot/grub/grub.cfg" 'biosdisk' 'iso9660'
+grub-mkimage --directory "$WD/chroot/usr/lib/grub/i386-efi" --prefix '()/boot/grub' \
+ --output "$WD/image/efi/boot/bootia32.efi" --format 'i386-efi' --compression 'auto'  \
+ --config "$WD/image/boot/grub/grub.cfg" 'part_gpt' 'part_msdos' 'fat' 'part_apple' 'iso9660'
+grub-mkimage --directory "$WD/chroot/usr/lib/grub/x86_64-efi" --prefix '()/boot/grub' \
+ --output "$WD/image/efi/boot/bootx64.efi" --format 'x86_64-efi' --compression 'auto' \
+ --config "$WD/image/boot/grub/grub.cfg" 'part_gpt' 'part_msdos' 'fat' 'part_apple' 'iso9660'
 
 # Creating EFI boot image
 mformat -C -f 2880 -L 16 -N 0 -i "$WD/image/boot/grub/efi.img" ::.
@@ -161,12 +158,16 @@ chmod 644 $WD/image/live/filesystem.squashfs
 find "$WD/image/" -exec touch --no-dereference --date="@$SOURCE_DATE_EPOCH" '{}' +
 
 # Creating the iso
-xorriso -as mkisofs -graft-points -b 'boot/grub/i386-pc/eltorito.img' -no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info --grub2-mbr "$WD/chroot/usr/lib/grub/i386-pc/boot_hybrid.img" --efi-boot 'boot/grub/efi.img' -efi-boot-part --efi-boot-image --protective-msdos-label -o "$ISONAME" -r "$WD/image" --sort-weight 0 '/' --sort-weight 1 '/boot'
+xorriso -as mkisofs -graft-points -b 'boot/grub/i386-pc/eltorito.img' \
+ -no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
+ --grub2-mbr "$WD/chroot/usr/lib/grub/i386-pc/boot_hybrid.img" \
+ --efi-boot 'boot/grub/efi.img' -efi-boot-part --efi-boot-image \
+ --protective-msdos-label -o "$ISONAME" -r "$WD/image" --sort-weight 0 '/' --sort-weight 1 '/boot'
 
 echo "Calculating SHA-256 HASH of the $ISONAME"
 NEWHASH=$(sha256sum < "${ISONAME}")
   if [ "$NEWHASH" != "$SHASUM" ]
-    then
+    then 
       echo "ERROR: SHA-256 hashes mismatched reproduction failed"
       echo "Please send us an issue report: https://github.com/iana-org/coen"
   else
