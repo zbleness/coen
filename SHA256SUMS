@@ -1,6 +1,6 @@
-f0c4f03275f0b626f6bac82a3f5db36620154c782374cca05ff39eba56157af0  ./create-iso.sh
+15e50bd9a10c7a5a9430e6269ec44a86be751c0ec70598d81e4f603b3fde0780  ./create-iso.sh
 c9d4b81cadb7f3c22826e609861d0628545e3f8301b1db256c1f5fa176f8617a  ./tools/hooks/1000-reproducible-function-uuid_generate_random.hook.chroot
 35fb13f16e234c5b2a3fdcc7389dae420dd898212971bf14324fb756d9a75ff4  ./tools/hooks/1001-reproducible-fontconfig.hook.chroot
 b0cb9c6e8ca58353afc5643ba184fc24a501c6f091c354b720ecce736171a951  ./tools/hooks/1002-fix-non-reproducible-files.hook.chroot
 72e4e673e75466fddd5f3964e3db3f941e0d40214ec37f167fe425b33e60e1c0  ./tools/mksquashfs-excludes
-b948d4192aedf78f603fc892ee7db893abda881d9206239f2475ec4e718e7026  ./variables.sh
+39674724190f5abaa1a7e6b25745d284d07464dfc738593246781fd6599231c6  ./variables.sh

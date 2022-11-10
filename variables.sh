@@ -10,7 +10,7 @@ export RELEASE=0.5.0   # Release version number
 export DATE=20221017   # Timestamp to use for version packages (`date +%Y%m%d`)
 export DIST=bullseye    # Debian distribution to base image on
 export ARCH=amd64      # Target architecture
-export SHASUM="e232af44b225d581b5e64f82f212633dd98a24f883d30e6ae1e90fd35444711a  -" # ISO image SHA-256
+export SHASUM="0a5a6f1aa6cdb15457a2211ff8ef5339d35e338a95023e96d18ebfa4efa0e3d0  -" # ISO image SHA-256
 export SOURCE_DATE_EPOCH="$(date --utc --date="$DATE" +%s)" # defined by reproducible-builds.org
 export WD=/opt/coen-${RELEASE}	       # Working directory to create the image
 export ISONAME=${WD}-${ARCH}.iso       # Final name of the ISO image

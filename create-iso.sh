@@ -26,7 +26,7 @@ debuerreotype-chroot $WD/chroot DEBIAN_FRONTEND=noninteractive apt-get -o Acquir
     vim links2 xpdf cups cups-bsd enscript libbsd-dev tree openssl less iputils-ping \
     xserver-xorg-core xserver-xorg xfce4 xfce4-terminal xfce4-panel lightdm system-config-printer \
     xterm gvfs thunar-volman xfce4-power-manager \
-    initramfs-tools-core initramfs-tools \
+    initramfs-tools-core initramfs-tools sudo dhcpcd5\
     qemu-system libvirt-clients libvirt-daemon-system
 
 debuerreotype-apt-get $WD/chroot --yes --purge autoremove
@@ -50,16 +50,18 @@ auto lo
 iface lo inet loopback
 
 auto eth0
-iface eth0 inet static
-  address 192.168.0.1
-  netmask 255.255.255.0
+allow-hotplug eth0
+iface eth0 inet dhcp
 EOF
 
-# ls with color
-sed -i -r -e '9s/^#//' \
-          -e '10s/^#//' \
-          -e '11s/^#//' \
-    $WD/chroot/root/.bashrc
+# Create vcc user
+debuerreotype-chroot $WD/chroot useradd -m -u 14250 -U -s /bin/bash vcc
+
+# Provide sudoers to vcc
+cat > $WD/chroot/etc/sudoers.d/vcc  << EOF
+# Allow user vcc to run sudo without password
+vcc ALL=(ALL) NOPASSWD: ALL
+EOF
 
 # Configure autologin
 for NUMBER in $(seq 1 6)
@@ -70,13 +72,13 @@ cat > $WD/chroot/etc/systemd/system/getty@tty${NUMBER}.service.d/live-config_aut
 [Service]
 Type=idle
 ExecStart=
-ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
+ExecStart=-/sbin/agetty --autologin vcc --noclear %I \$TERM
 TTYVTDisallocate=no
 EOF
 done
 
-# XFCE root auto login
-sed -i -r -e "s|^#.*autologin-user=.*\$|autologin-user=root|" \
+# XFCE vcc auto login
+sed -i -r -e "s|^#.*autologin-user=.*\$|autologin-user=vcc|" \
           -e "s|^#.*autologin-user-timeout=.*\$|autologin-user-timeout=0|" \
     $WD/chroot/etc/lightdm/lightdm.conf
 
@@ -169,7 +171,7 @@ NEWHASH=$(sha256sum < "${ISONAME}")
   if [ "$NEWHASH" != "$SHASUM" ]
     then 
       echo "ERROR: SHA-256 hashes mismatched reproduction failed"
-      echo "Please send us an issue report: https://github.com/iana-org/coen"
+      echo "Please send us an issue report: https://github.com/volvo-cars/coen"
   else
       echo "Successfully reproduced coen-${RELEASE}"
   fi
