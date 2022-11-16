@@ -26,8 +26,8 @@ debuerreotype-chroot $WD/chroot DEBIAN_FRONTEND=noninteractive apt-get -o Acquir
     vim links2 xpdf cups cups-bsd enscript libbsd-dev tree openssl less iputils-ping \
     xserver-xorg-core xserver-xorg xfce4 xfce4-terminal xfce4-panel lightdm system-config-printer \
     xterm gvfs thunar-volman xfce4-power-manager \
-    initramfs-tools-core initramfs-tools sudo dhcpcd5\
-    qemu-system libvirt-clients libvirt-daemon-system
+    initramfs-tools-core initramfs-tools sudo dhcpcd5 \
+    qemu-system-x86
 
 debuerreotype-apt-get $WD/chroot --yes --purge autoremove
 debuerreotype-apt-get $WD/chroot --yes clean

@@ -19,7 +19,7 @@ RUN apt-get update -o Acquire::Check-Valid-Until=false && \
     apt-get install -o Acquire::Check-Valid-Until=false --no-install-recommends --yes \
     grub-pc-bin grub-efi-ia32-bin grub-efi-amd64-bin \
     liblzo2-2 xorriso debootstrap \
-    squashfs-tools debuerreotype mtools\ 
+    squashfs-tools debuerreotype mtools \ 
     locales g++ && \
     sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen && \
     locale-gen en_US.UTF-8
